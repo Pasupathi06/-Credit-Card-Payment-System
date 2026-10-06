@@ -1,0 +1,369 @@
+﻿{
+  "info": {
+    "name": "Credit Card Payment System API",
+    "description": "Postman collection for the Credit Card Payment System. Covers Django authentication, cards, transactions, admin APIs, and FastAPI payment APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "django_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "fastapi_url",
+      "value": "http://127.0.0.1:8001"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "card_id",
+      "value": "2"
+    },
+    {
+      "key": "payment_id",
+      "value": "1"
+    },
+    {
+      "key": "admin_user_id",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Django - Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"postmanuser\",\n  \"email\": \"postman@example.com\",\n  \"password\": \"PostmanPass123!\",\n  \"first_name\": \"Postman\",\n  \"last_name\": \"User\"\n}"
+            },
+            "url": "{{django_url}}/api/auth/register/"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', data.access);",
+                  "pm.collectionVariables.set('refresh_token', data.refresh);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"postmanuser\",\n  \"password\": \"PostmanPass123!\"\n}"
+            },
+            "url": "{{django_url}}/api/auth/login/"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": "{{django_url}}/api/auth/logout/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Django - Cards",
+      "item": [
+        {
+          "name": "List My Cards",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{django_url}}/api/cards/"
+          }
+        },
+        {
+          "name": "Add Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"card_holder_name\": \"Postman User\",\n  \"card_number\": \"4111111111111111\",\n  \"card_type\": \"VISA\",\n  \"expiry_month\": 12,\n  \"expiry_year\": 2030\n}"
+            },
+            "url": "{{django_url}}/api/cards/"
+          }
+        },
+        {
+          "name": "Delete Card",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{django_url}}/api/cards/{{card_id}}/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "FastAPI - Payment",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": "{{fastapi_url}}/health"
+          }
+        },
+        {
+          "name": "Database Health",
+          "request": {
+            "method": "GET",
+            "url": "{{fastapi_url}}/database-health"
+          }
+        },
+        {
+          "name": "Make Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 1,\n  \"card_id\": 2,\n  \"amount\": 100,\n  \"description\": \"Postman payment test\"\n}"
+            },
+            "url": "{{fastapi_url}}/payments/"
+          }
+        },
+        {
+          "name": "Get Payment",
+          "request": {
+            "method": "GET",
+            "url": "{{fastapi_url}}/payments/{{payment_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Django - Transactions",
+      "item": [
+        {
+          "name": "My Transactions",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{django_url}}/api/transactions/"
+          }
+        },
+        {
+          "name": "Admin Transactions",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{django_url}}/api/transactions/admin/"
+          }
+        },
+        {
+          "name": "Admin Dashboard",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{django_url}}/api/transactions/admin/dashboard/"
+          }
+        },
+        {
+          "name": "Export Transactions CSV",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{django_url}}/api/transactions/admin/export-csv/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Django - Admin",
+      "item": [
+        {
+          "name": "Admin Users",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{django_url}}/api/auth/admin/users/"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": true\n}"
+            },
+            "url": "{{django_url}}/api/auth/admin/users/{{admin_user_id}}/"
+          }
+        },
+        {
+          "name": "Admin Cards",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{django_url}}/api/cards/admin/"
+          }
+        }
+      ]
+    }
+  ]
+}

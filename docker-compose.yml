@@ -1,0 +1,59 @@
+﻿services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: credit-card-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: credit_card_payment_db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  django:
+    build:
+      context: ./django_backend
+    container_name: credit-card-django
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      MYSQL_DATABASE: credit_card_payment_db
+      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+    ports:
+      - "8000:8000"
+
+  fastapi:
+    build:
+      context: ./fastapi_backend
+    container_name: credit-card-fastapi
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - django
+    environment:
+      DATABASE_URL: mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@mysql:3306/credit_card_payment_db
+      DJANGO_SYNC_URL: http://django:8000/api/transactions/internal-sync/
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+    ports:
+      - "8001:8001"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: credit-card-frontend
+    restart: unless-stopped
+    depends_on:
+      - django
+      - fastapi
+    ports:
+      - "5173:5173"
+
+volumes:
+  mysql_data:
