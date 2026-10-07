@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import AdminLog
 
 
@@ -22,7 +23,10 @@ class AdminLogAdmin(admin.ModelAdmin):
         "admin__username",
         "admin__email",
         "description",
+        "ip_address",
     )
+
+    ordering = ("-created_at",)
 
     readonly_fields = (
         "created_at",
