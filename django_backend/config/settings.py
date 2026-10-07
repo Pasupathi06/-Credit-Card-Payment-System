@@ -8,6 +8,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+from dotenv import load_dotenv
+
 
 # ============================================================
 # BASE DIRECTORY
@@ -17,12 +19,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # ============================================================
-# INTERNAL API CONFIGURATION
+# LOAD ENVIRONMENT VARIABLES
 # ============================================================
 
-# Shared secret used by FastAPI -> Django transaction sync.
-# This value is provided through the environment variable:
-# INTERNAL_API_KEY
+# Loads variables from:
+# C:\Users\pasup\OneDrive\Desktop\Credit Card Payment System\
+# django_backend\.env
+
+load_dotenv(BASE_DIR / ".env")
+
+
+# ============================================================
+# INTERNAL API CONFIGURATION
+# ============================================================
 
 INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY", "")
 
@@ -33,10 +42,13 @@ INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY", "")
 
 SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY",
-    "django-insecure-x-n$wv5k2!$go3^d%&79^$1u54!9()8xym3-4z6vat_q4xgsy)"
+    "django-insecure-x-n$wv5k2!$go3^d%&79^$1u54!9()8xym3-4z6vat_q4xgsy)",
 )
 
-DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
+DEBUG = os.getenv(
+    "DJANGO_DEBUG",
+    "True",
+).lower() == "true"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -79,7 +91,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
 
-    # CORS
     "corsheaders.middleware.CorsMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -107,7 +118,6 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
         "APP_DIRS": True,
-
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
@@ -129,16 +139,6 @@ WSGI_APPLICATION = "config.wsgi.application"
 # ============================================================
 # DATABASE - MYSQL
 # ============================================================
-
-# Local development:
-#   MYSQL_HOST=127.0.0.1
-#   MYSQL_PORT=3306
-#
-# Docker:
-#   MYSQL_HOST=mysql
-#   MYSQL_PORT=3306
-#
-# Password is never hardcoded here.
 
 DATABASES = {
     "default": {
@@ -224,7 +224,6 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
 
-    # Swagger / OpenAPI
     "DEFAULT_SCHEMA_CLASS": (
         "drf_spectacular.openapi.AutoSchema"
     ),
@@ -246,10 +245,8 @@ SPECTACULAR_SETTINGS = {
 
     "VERSION": "1.0.0",
 
-    # Do not show the schema endpoint inside Swagger
     "SERVE_INCLUDE_SCHEMA": False,
 
-    # JWT authentication configuration
     "SECURITY": [
         {
             "BearerAuth": [],
@@ -273,19 +270,14 @@ SPECTACULAR_SETTINGS = {
 # ============================================================
 
 SIMPLE_JWT = {
-    # Access token valid for 30 minutes
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
 
-    # Refresh token valid for 1 day
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 
-    # Refresh token rotation
     "ROTATE_REFRESH_TOKENS": False,
 
-    # Blacklist support
     "BLACKLIST_AFTER_ROTATION": False,
 
-    # Authorization header
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
@@ -293,9 +285,6 @@ SIMPLE_JWT = {
 # ============================================================
 # CORS CONFIGURATION
 # ============================================================
-
-# Development configuration.
-# React frontend can communicate with Django backend.
 
 CORS_ALLOW_ALL_ORIGINS = True
 

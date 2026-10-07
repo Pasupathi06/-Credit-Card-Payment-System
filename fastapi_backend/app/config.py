@@ -17,6 +17,8 @@ class Settings(BaseSettings):
 
     internal_api_key: str
 
+    jwt_secret_key: str
+
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",
         env_file_encoding="utf-8",

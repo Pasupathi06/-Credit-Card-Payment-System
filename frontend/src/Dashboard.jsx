@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { djangoApi } from './api'
+import { djangoApi, fastApi } from './api'
 import './Dashboard.css'
 
 function Dashboard({ onLogout }) {
   const [cards, setCards] = useState([])
   const [transactions, setTransactions] = useState([])
+  const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -21,6 +22,7 @@ function Dashboard({ onLogout }) {
 
       if (!token) {
         setError('Session expired. Please login again.')
+        setLoading(false)
         return
       }
 
@@ -28,23 +30,24 @@ function Dashboard({ onLogout }) {
         setLoading(true)
         setError('')
 
-        const [cardsResponse, transactionsResponse] = await Promise.all([
-          djangoApi.get('/cards/', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          djangoApi.get('/transactions/', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ])
+        const authConfig = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+
+        const [cardsResponse, transactionsResponse, summaryResponse] =
+          await Promise.all([
+            djangoApi.get('/cards/', authConfig),
+            djangoApi.get('/transactions/', authConfig),
+            fastApi.get('/dashboard/summary', authConfig),
+          ])
 
         setCards(cardsResponse.data)
         setTransactions(transactionsResponse.data)
+        setSummary(summaryResponse.data)
       } catch (err) {
-        console.error(err)
+        console.error('Dashboard loading error:', err)
 
         if (err.response?.status === 401) {
           setError('Session expired. Please login again.')
@@ -98,10 +101,21 @@ function Dashboard({ onLogout }) {
     (transaction) => transaction.status === 'SUCCESS'
   )
 
-  const totalSpent = successfulTransactions.reduce(
-    (total, transaction) => total + Number(transaction.amount || 0),
-    0
-  )
+  const formatAmount = (amount) => {
+    return `₹${Number(amount || 0).toFixed(2)}`
+  }
+
+  const formatDate = (date) => {
+    if (!date) return '-'
+
+    const parsedDate = new Date(date)
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '-'
+    }
+
+    return parsedDate.toLocaleDateString()
+  }
 
   return (
     <div className="dashboard-page">
@@ -169,40 +183,77 @@ function Dashboard({ onLogout }) {
           </div>
         )}
 
-        {/* STATS */}
+        {/* USAGE STATS */}
         <section className="dashboard-stats">
 
-          <div className="stat-card">
-            <div className="stat-icon">💳</div>
-            <div>
-              <span>Total Cards</span>
-              <strong>{cards.length}</strong>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">↔</div>
-            <div>
-              <span>Transactions</span>
-              <strong>{transactions.length}</strong>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">✓</div>
-            <div>
-              <span>Successful</span>
-              <strong>{successfulTransactions.length}</strong>
-            </div>
-          </div>
-
+          {/* TOTAL SPENT */}
           <div className="stat-card">
             <div className="stat-icon">₹</div>
+
             <div>
               <span>Total Spent</span>
-              <strong>
-                ₹{totalSpent.toFixed(2)}
-              </strong>
+
+              {loading ? (
+                <div className="stat-skeleton" />
+              ) : (
+                <strong>
+                  {formatAmount(summary?.total_amount_spent)}
+                </strong>
+              )}
+            </div>
+          </div>
+
+          {/* AVAILABLE CREDIT */}
+          <div className="stat-card">
+            <div className="stat-icon">💳</div>
+
+            <div>
+              <span>Available Credit</span>
+
+              {loading ? (
+                <div className="stat-skeleton" />
+              ) : (
+                <strong>
+                  {summary?.available_credit_limit !== null &&
+                  summary?.available_credit_limit !== undefined
+                    ? formatAmount(summary.available_credit_limit)
+                    : 'Not available'}
+                </strong>
+              )}
+            </div>
+          </div>
+
+          {/* TOTAL TRANSACTIONS */}
+          <div className="stat-card">
+            <div className="stat-icon">↔</div>
+
+            <div>
+              <span>Total Transactions</span>
+
+              {loading ? (
+                <div className="stat-skeleton" />
+              ) : (
+                <strong>
+                  {summary?.total_transactions ?? 0}
+                </strong>
+              )}
+            </div>
+          </div>
+
+          {/* CURRENT MONTH */}
+          <div className="stat-card">
+            <div className="stat-icon">📅</div>
+
+            <div>
+              <span>This Month Spending</span>
+
+              {loading ? (
+                <div className="stat-skeleton" />
+              ) : (
+                <strong>
+                  {formatAmount(summary?.current_month_spending)}
+                </strong>
+              )}
             </div>
           </div>
 
@@ -219,6 +270,7 @@ function Dashboard({ onLogout }) {
                 <span className="panel-label">
                   PAYMENT METHODS
                 </span>
+
                 <h3>My Cards</h3>
               </div>
 
@@ -234,8 +286,12 @@ function Dashboard({ onLogout }) {
             ) : cards.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">💳</div>
+
                 <strong>No cards added yet</strong>
-                <p>Add your first card to start making payments.</p>
+
+                <p>
+                  Add your first card to start making payments.
+                </p>
               </div>
             ) : (
               <div className="cards-list">
@@ -245,6 +301,7 @@ function Dashboard({ onLogout }) {
                     className="mini-card"
                     key={card.id}
                   >
+
                     <div className="mini-card-top">
                       <strong>CARDPAY</strong>
                       <span>{card.card_type}</span>
@@ -256,8 +313,10 @@ function Dashboard({ onLogout }) {
                     </div>
 
                     <div className="mini-card-bottom">
+
                       <div>
                         <small>CARD HOLDER</small>
+
                         <strong>
                           {card.card_holder_name}
                         </strong>
@@ -265,12 +324,15 @@ function Dashboard({ onLogout }) {
 
                       <div>
                         <small>EXPIRY</small>
+
                         <strong>
                           {String(card.expiry_month).padStart(2, '0')}/
                           {card.expiry_year}
                         </strong>
                       </div>
+
                     </div>
+
                   </div>
                 ))}
 
@@ -299,8 +361,10 @@ function Dashboard({ onLogout }) {
 
             <div className="payment-security">
               <span>🔐</span>
+
               <div>
                 <strong>Secure Payment</strong>
+
                 <p>
                   Your card number and CVV are never stored.
                 </p>
@@ -321,7 +385,7 @@ function Dashboard({ onLogout }) {
                 PAYMENT ACTIVITY
               </span>
 
-              <h3>Recent Transactions</h3>
+              <h3>Last 5 Transactions</h3>
             </div>
 
             <button className="panel-action">
@@ -332,13 +396,25 @@ function Dashboard({ onLogout }) {
 
           {loading ? (
             <div className="empty-state">
-              Loading transactions...
+              <div className="transaction-loading">
+                Loading transactions...
+              </div>
             </div>
-          ) : transactions.length === 0 ? (
+          ) : summary?.last_5_transactions?.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">↔</div>
-              <strong>No transactions yet</strong>
-              <p>Your payment activity will appear here.</p>
+
+              <div className="empty-icon">
+                ↔
+              </div>
+
+              <strong>
+                No transactions yet
+              </strong>
+
+              <p>
+                Your payment activity will appear here.
+              </p>
+
             </div>
           ) : (
             <div className="transactions-table">
@@ -350,46 +426,52 @@ function Dashboard({ onLogout }) {
                 <span>Date</span>
               </div>
 
-              {transactions.slice(0, 5).map((transaction) => (
-                <div
-                  className="transaction-row"
-                  key={transaction.id}
-                >
-                  <div className="transaction-name">
-                    <div className="transaction-icon">
-                      ₹
-                    </div>
-
-                    <div>
-                      <strong>
-                        Payment #{transaction.id}
-                      </strong>
-
-                      <small>
-                        {transaction.description ||
-                          'Card payment'}
-                      </small>
-                    </div>
-                  </div>
-
-                  <strong>
-                    ₹{Number(transaction.amount).toFixed(2)}
-                  </strong>
-
-                  <span
-                    className={`status-badge status-${transaction.status.toLowerCase()}`}
+              {summary?.last_5_transactions?.map(
+                (transaction, index) => (
+                  <div
+                    className="transaction-row"
+                    key={`${transaction.date}-${index}`}
                   >
-                    {transaction.status}
-                  </span>
 
-                  <span className="transaction-date">
-                    {new Date(
-                      transaction.created_at
-                    ).toLocaleDateString()}
-                  </span>
+                    <div className="transaction-name">
 
-                </div>
-              ))}
+                      <div className="transaction-icon">
+                        ₹
+                      </div>
+
+                      <div>
+
+                        <strong>
+                          {transaction.masked_card_number || '****'}
+                        </strong>
+
+                        <small>
+                          Card payment
+                        </small>
+
+                      </div>
+
+                    </div>
+
+                    <strong>
+                      {formatAmount(transaction.amount)}
+                    </strong>
+
+                    <span
+                      className={`status-badge status-${String(
+                        transaction.status || ''
+                      ).toLowerCase()}`}
+                    >
+                      {transaction.status}
+                    </span>
+
+                    <span className="transaction-date">
+                      {formatDate(transaction.date)}
+                    </span>
+
+                  </div>
+                )
+              )}
 
             </div>
           )}
@@ -400,8 +482,15 @@ function Dashboard({ onLogout }) {
 
       {/* FOOTER */}
       <footer className="dashboard-footer">
-        <span>© 2026 CardPay Financial Platform</span>
-        <span>256-bit Encryption • Secure Payments</span>
+
+        <span>
+          © 2026 CardPay Financial Platform
+        </span>
+
+        <span>
+          256-bit Encryption • Secure Payments
+        </span>
+
       </footer>
 
     </div>

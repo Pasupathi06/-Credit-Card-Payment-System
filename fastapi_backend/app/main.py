@@ -5,6 +5,7 @@ from sqlalchemy import text
 from .database import engine, Base
 from .models.payment import Payment
 from .routers.payments import router as payments_router
+from .routers.dashboard import router as dashboard_router
 
 
 app = FastAPI(
@@ -41,6 +42,12 @@ Base.metadata.create_all(bind=engine)
 # Payment router
 # ---------------------------------------------------------
 app.include_router(payments_router)
+
+
+# ---------------------------------------------------------
+# Dashboard router
+# ---------------------------------------------------------
+app.include_router(dashboard_router)
 
 
 # ---------------------------------------------------------
