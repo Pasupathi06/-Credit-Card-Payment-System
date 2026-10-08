@@ -1,31 +1,27 @@
+/* =========================================================
+   CARDPAY DASHBOARD
+   PROFESSIONAL DARK / LIGHT THEME
+========================================================= */
+
 .dashboard-page {
   min-height: 100vh;
   background:
-    radial-gradient(
-      circle at 10% 10%,
-      rgba(20, 184, 166, 0.12),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 90% 20%,
-      rgba(14, 165, 233, 0.12),
-      transparent 28%
-    ),
-    #07111f;
+    radial-gradient(circle at 8% 8%, rgba(20, 184, 166, 0.10), transparent 25%),
+    radial-gradient(circle at 92% 12%, rgba(14, 165, 233, 0.10), transparent 25%),
+    linear-gradient(135deg, #030712 0%, #07111f 48%, #081522 100%);
   color: #f8fafc;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
-
   transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+    background 0.35s ease,
+    color 0.35s ease;
 }
 
 /* =========================================================
-   THEME TRANSITIONS
+   GLOBAL THEME TRANSITION
 ========================================================= */
 
-.dashboard-page,
+.dashboard-page *,
 .dashboard-header,
 .dashboard-date,
 .stat-card,
@@ -33,9 +29,11 @@
 .empty-state,
 .payment-security,
 .logout-button,
-.theme-toggle {
+.theme-toggle,
+.mini-card {
   transition:
     background-color 0.3s ease,
+    background 0.3s ease,
     border-color 0.3s ease,
     color 0.3s ease,
     box-shadow 0.3s ease;
@@ -52,14 +50,15 @@
   align-items: center;
   justify-content: space-between;
 
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
-  background: rgba(7, 17, 31, 0.88);
-  backdrop-filter: blur(18px);
-
   position: sticky;
   top: 0;
   z-index: 20;
+
+  background: rgba(3, 7, 18, 0.88);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.10);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .dashboard-brand {
@@ -77,17 +76,22 @@
   align-items: center;
   justify-content: center;
 
-  background: linear-gradient(135deg, #21d4d0, #0ea5e9);
+  background: linear-gradient(135deg, #14b8a6, #0891b2);
+  color: #ffffff;
 
-  color: white;
   font-size: 23px;
+  font-weight: 900;
 
-  box-shadow: 0 8px 25px rgba(20, 184, 166, 0.28);
+  box-shadow:
+    0 8px 25px rgba(20, 184, 166, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .dashboard-brand h1 {
   margin: 0;
+  color: #f8fafc;
   font-size: 22px;
+  font-weight: 800;
   letter-spacing: -0.5px;
 }
 
@@ -96,7 +100,6 @@
   margin-top: 2px;
 
   color: #64748b;
-
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 2px;
@@ -105,7 +108,7 @@
 .dashboard-header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 /* =========================================================
@@ -113,37 +116,30 @@
 ========================================================= */
 
 .theme-toggle {
+  min-height: 38px;
+  padding: 8px 13px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
 
-  min-height: 38px;
-  padding: 8px 13px;
-
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
 
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(15, 23, 42, 0.72);
   color: #e2e8f0;
 
   font-size: 12px;
   font-weight: 800;
 
   cursor: pointer;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
 }
 
 .theme-toggle:hover {
   background: rgba(20, 184, 166, 0.12);
-  border-color: rgba(20, 184, 166, 0.3);
+  border-color: rgba(45, 212, 191, 0.35);
   color: #5eead4;
-
   transform: translateY(-1px);
 }
 
@@ -172,11 +168,10 @@
   padding: 9px 13px;
   border-radius: 30px;
 
-  background: rgba(20, 184, 166, 0.1);
-  border: 1px solid rgba(20, 184, 166, 0.2);
+  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(20, 184, 166, 0.20);
 
   color: #5eead4;
-
   font-size: 12px;
   font-weight: 700;
 }
@@ -186,29 +181,22 @@
 ========================================================= */
 
 .logout-button {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-
   padding: 10px 17px;
+
+  border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 10px;
+
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2e8f0;
 
   cursor: pointer;
   font-weight: 700;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
 }
 
 .logout-button:hover {
   background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.30);
   color: #fca5a5;
-
   transform: translateY(-1px);
 }
 
@@ -230,14 +218,13 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: 30px;
 
+  gap: 30px;
   margin-bottom: 32px;
 }
 
 .dashboard-eyebrow {
   color: #2dd4bf;
-
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 2px;
@@ -246,6 +233,7 @@
 .dashboard-welcome h2 {
   margin: 10px 0 8px;
 
+  color: #f8fafc;
   font-size: clamp(28px, 4vw, 42px);
   line-height: 1.1;
   letter-spacing: -1.5px;
@@ -253,7 +241,6 @@
 
 .dashboard-welcome p {
   margin: 0;
-
   color: #94a3b8;
   font-size: 15px;
 }
@@ -264,24 +251,26 @@
 
 .dashboard-date {
   min-width: 145px;
-
   padding: 16px 18px;
+
   border-radius: 15px;
 
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.70);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
 .dashboard-date span {
   display: block;
+  margin-bottom: 7px;
 
   color: #64748b;
-
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1.4px;
-
-  margin-bottom: 7px;
 }
 
 .dashboard-date strong {
@@ -295,12 +284,12 @@
 
 .dashboard-error {
   margin-bottom: 24px;
-
   padding: 14px 17px;
+
   border-radius: 12px;
 
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.20);
 
   color: #fca5a5;
 }
@@ -312,29 +301,46 @@
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-
   gap: 16px;
+
   margin-bottom: 22px;
 }
 
 .stat-card {
   display: flex;
   align-items: center;
-
   gap: 14px;
+
   padding: 21px;
 
   border-radius: 17px;
 
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15, 23, 42, 0.92),
+      rgba(8, 21, 34, 0.88)
+    );
 
-  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.10);
+
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.stat-card:hover {
+  border-color: rgba(45, 212, 191, 0.22);
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.26),
+    0 0 25px rgba(20, 184, 166, 0.05);
+  transform: translateY(-2px);
 }
 
 .stat-icon {
   width: 44px;
   height: 44px;
+  flex-shrink: 0;
 
   border-radius: 12px;
 
@@ -342,22 +348,28 @@
   align-items: center;
   justify-content: center;
 
-  background: rgba(20, 184, 166, 0.1);
-  color: #5eead4;
+  background: linear-gradient(
+    135deg,
+    rgba(20, 184, 166, 0.14),
+    rgba(14, 165, 233, 0.10)
+  );
 
+  border: 1px solid rgba(45, 212, 191, 0.12);
+
+  color: #5eead4;
   font-size: 19px;
 }
 
 .stat-card span {
   display: block;
+  margin-bottom: 4px;
 
   color: #64748b;
-
   font-size: 11px;
-  margin-bottom: 4px;
 }
 
 .stat-card strong {
+  color: #f8fafc;
   font-size: 21px;
 }
 
@@ -366,8 +378,7 @@
   height: 22px;
 
   border-radius: 6px;
-
-  background: rgba(148, 163, 184, 0.15);
+  background: rgba(148, 163, 184, 0.12);
 
   animation: skeletonPulse 1.4s ease-in-out infinite;
 }
@@ -392,7 +403,6 @@
 
 .dashboard-grid {
   display: grid;
-
   grid-template-columns: 1.35fr 0.65fr;
 
   gap: 20px;
@@ -404,14 +414,26 @@
 ========================================================= */
 
 .dashboard-panel {
-  border-radius: 20px;
-
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-
   padding: 25px;
 
-  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.12);
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15, 23, 42, 0.94),
+      rgba(8, 21, 34, 0.91)
+    );
+
+  border: 1px solid rgba(148, 163, 184, 0.10);
+
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.dashboard-panel:hover {
+  border-color: rgba(45, 212, 191, 0.15);
 }
 
 .panel-header {
@@ -425,37 +447,32 @@
 
 .panel-label {
   display: block;
+  margin-bottom: 5px;
 
   color: #64748b;
-
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 1.6px;
-
-  margin-bottom: 5px;
 }
 
 .dashboard-panel h3 {
   margin: 0;
 
+  color: #f8fafc;
   font-size: 21px;
   letter-spacing: -0.5px;
 }
 
 .panel-action {
   border: 0;
-
   background: transparent;
+
   color: #2dd4bf;
 
   font-size: 12px;
   font-weight: 800;
 
   cursor: pointer;
-
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
 }
 
 .panel-action:hover {
@@ -469,15 +486,12 @@
 
 .cards-list {
   display: grid;
-
   grid-template-columns: repeat(2, 1fr);
-
   gap: 14px;
 }
 
 .mini-card {
   min-height: 145px;
-
   padding: 20px;
 
   border-radius: 16px;
@@ -485,24 +499,26 @@
   background:
     radial-gradient(
       circle at 85% 15%,
-      rgba(45, 212, 191, 0.2),
+      rgba(45, 212, 191, 0.18),
       transparent 30%
     ),
-    linear-gradient(135deg, #17243a, #0c1729);
+    linear-gradient(135deg, #142238, #081321);
 
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(45, 212, 191, 0.10);
 
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    background 0.3s ease,
-    border-color 0.3s ease;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .mini-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 
-  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.2);
+  border-color: rgba(45, 212, 191, 0.25);
+
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    0 0 25px rgba(20, 184, 166, 0.06);
 }
 
 .mini-card-top {
@@ -510,13 +526,11 @@
   justify-content: space-between;
 
   color: #f8fafc;
-
   font-size: 12px;
 }
 
 .mini-card-top span {
   color: #5eead4;
-
   font-size: 10px;
   font-weight: 800;
 }
@@ -537,18 +551,17 @@
 
 .mini-card-bottom small {
   display: block;
+  margin-bottom: 3px;
 
   color: #64748b;
 
   font-size: 7px;
   letter-spacing: 1px;
-
-  margin-bottom: 3px;
 }
 
 .mini-card-bottom strong {
-  font-size: 9px;
   color: #e2e8f0;
+  font-size: 9px;
 }
 
 /* =========================================================
@@ -565,56 +578,60 @@
 }
 
 .payment-panel > p {
+  margin: 12px 0 25px;
+
   color: #94a3b8;
 
   font-size: 13px;
   line-height: 1.6;
-
-  margin: 12px 0 25px;
 }
 
 .payment-button {
   width: 100%;
-
-  border: 0;
-  border-radius: 12px;
-
   padding: 14px 17px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  background: linear-gradient(135deg, #14b8a6, #0891b2);
+  border: 0;
+  border-radius: 12px;
 
-  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      #14b8a6,
+      #0891b2 55%,
+      #0ea5e9
+    );
+
+  color: #ffffff;
 
   font-weight: 800;
 
   cursor: pointer;
 
-  box-shadow: 0 12px 30px rgba(20, 184, 166, 0.2);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  box-shadow:
+    0 12px 30px rgba(20, 184, 166, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .payment-button:hover {
   transform: translateY(-2px);
 
-  box-shadow: 0 16px 35px rgba(20, 184, 166, 0.3);
+  box-shadow:
+    0 18px 38px rgba(20, 184, 166, 0.28),
+    0 0 25px rgba(14, 165, 233, 0.10);
 }
 
 .payment-security {
   margin-top: auto;
-
   padding-top: 25px;
 
   display: flex;
   gap: 10px;
 
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(148, 163, 184, 0.09);
 }
 
 .payment-security > span {
@@ -622,6 +639,7 @@
 }
 
 .payment-security strong {
+  color: #e2e8f0;
   font-size: 11px;
 }
 
@@ -650,14 +668,12 @@
   min-height: 62px;
 
   display: grid;
-
   grid-template-columns: 2fr 1fr 1fr 1fr;
-
   align-items: center;
 
   gap: 15px;
 
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(148, 163, 184, 0.07);
 }
 
 .transaction-heading {
@@ -675,13 +691,13 @@
 .transaction-name {
   display: flex;
   align-items: center;
-
   gap: 11px;
 }
 
 .transaction-icon {
   width: 35px;
   height: 35px;
+  flex-shrink: 0;
 
   border-radius: 10px;
 
@@ -689,12 +705,16 @@
   align-items: center;
   justify-content: center;
 
-  background: rgba(14, 165, 233, 0.1);
+  background: rgba(14, 165, 233, 0.10);
+  border: 1px solid rgba(14, 165, 233, 0.08);
+
   color: #38bdf8;
 }
 
 .transaction-name strong {
   display: block;
+
+  color: #e2e8f0;
   font-size: 12px;
 }
 
@@ -710,11 +730,11 @@
   color: #64748b;
 
   font-size: 9px;
-
   margin-top: 3px;
 }
 
 .transaction-row > strong {
+  color: #e2e8f0;
   font-size: 12px;
 }
 
@@ -735,18 +755,21 @@
 }
 
 .status-success {
-  background: rgba(34, 197, 94, 0.1);
+  background: rgba(34, 197, 94, 0.10);
   color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.10);
 }
 
 .status-failed {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.10);
   color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.10);
 }
 
 .status-pending {
-  background: rgba(234, 179, 8, 0.1);
+  background: rgba(234, 179, 8, 0.10);
   color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.10);
 }
 
 /* =========================================================
@@ -759,7 +782,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-direction: column;
 
   text-align: center;
@@ -768,8 +790,8 @@
 }
 
 .empty-icon {
-  font-size: 25px;
   margin-bottom: 8px;
+  font-size: 25px;
 }
 
 .empty-state strong {
@@ -779,10 +801,12 @@
 
 .empty-state p {
   margin: 5px 0 0;
+  color: #64748b;
   font-size: 10px;
 }
 
 .transaction-loading {
+  color: #64748b;
   font-size: 12px;
 }
 
@@ -792,16 +816,13 @@
 
 .dashboard-footer {
   width: min(1180px, 90%);
-
   margin: 0 auto;
-
   padding: 25px 0 35px;
 
   display: flex;
   justify-content: space-between;
 
   color: #475569;
-
   font-size: 10px;
 }
 
@@ -811,24 +832,16 @@
 
 [data-theme="light"] .dashboard-page {
   background:
-    radial-gradient(
-      circle at 10% 10%,
-      rgba(20, 184, 166, 0.09),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 90% 20%,
-      rgba(14, 165, 233, 0.09),
-      transparent 28%
-    ),
-    #f5f8fc;
+    radial-gradient(circle at 8% 8%, rgba(20, 184, 166, 0.08), transparent 25%),
+    radial-gradient(circle at 92% 12%, rgba(14, 165, 233, 0.08), transparent 25%),
+    linear-gradient(135deg, #e9eef5, #f4f7fb 55%, #e8f0f7);
 
   color: #0f172a;
 }
 
 [data-theme="light"] .dashboard-header {
-  background: rgba(255, 255, 255, 0.9);
-  border-bottom-color: rgba(15, 23, 42, 0.08);
+  background: rgba(226, 232, 240, 0.92);
+  border-bottom-color: rgba(15, 23, 42, 0.10);
 }
 
 [data-theme="light"] .dashboard-brand h1 {
@@ -839,28 +852,26 @@
   color: #64748b;
 }
 
-[data-theme="light"] .theme-toggle {
-  background: rgba(15, 23, 42, 0.04);
-  border-color: rgba(15, 23, 42, 0.1);
+[data-theme="light"] .theme-toggle,
+[data-theme="light"] .logout-button {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(15, 23, 42, 0.12);
   color: #334155;
 }
 
 [data-theme="light"] .theme-toggle:hover {
-  background: rgba(20, 184, 166, 0.1);
+  background: rgba(20, 184, 166, 0.10);
   border-color: rgba(20, 184, 166, 0.25);
   color: #0f766e;
 }
 
-[data-theme="light"] .logout-button {
-  background: rgba(15, 23, 42, 0.04);
-  border-color: rgba(15, 23, 42, 0.1);
-  color: #334155;
-}
-
 [data-theme="light"] .logout-button:hover {
   background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.25);
   color: #dc2626;
+}
+
+[data-theme="light"] .dashboard-welcome h2 {
+  color: #0f172a;
 }
 
 [data-theme="light"] .dashboard-welcome p {
@@ -869,9 +880,8 @@
 
 [data-theme="light"] .dashboard-date {
   background: rgba(255, 255, 255, 0.72);
-  border-color: rgba(15, 23, 42, 0.08);
-
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  border-color: rgba(15, 23, 42, 0.09);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
 
 [data-theme="light"] .dashboard-date span {
@@ -882,25 +892,25 @@
   color: #0f766e;
 }
 
-[data-theme="light"] .dashboard-error {
-  background: rgba(239, 68, 68, 0.07);
-  border-color: rgba(239, 68, 68, 0.18);
-  color: #dc2626;
-}
-
 [data-theme="light"] .stat-card {
-  background: rgba(255, 255, 255, 0.78);
-  border-color: rgba(15, 23, 42, 0.08);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.92),
+      rgba(239, 246, 255, 0.88)
+    );
 
-  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.06);
-}
+  border-color: rgba(15, 23, 42, 0.09);
 
-[data-theme="light"] .stat-card span {
-  color: #64748b;
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.07);
 }
 
 [data-theme="light"] .stat-card strong {
   color: #0f172a;
+}
+
+[data-theme="light"] .stat-card span {
+  color: #64748b;
 }
 
 [data-theme="light"] .stat-icon {
@@ -909,18 +919,24 @@
 }
 
 [data-theme="light"] .dashboard-panel {
-  background: rgba(255, 255, 255, 0.78);
-  border-color: rgba(15, 23, 42, 0.08);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.92),
+      rgba(239, 246, 255, 0.88)
+    );
 
-  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.06);
-}
+  border-color: rgba(15, 23, 42, 0.09);
 
-[data-theme="light"] .panel-label {
-  color: #64748b;
+  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.07);
 }
 
 [data-theme="light"] .dashboard-panel h3 {
   color: #0f172a;
+}
+
+[data-theme="light"] .panel-label {
+  color: #64748b;
 }
 
 [data-theme="light"] .panel-action {
@@ -931,38 +947,40 @@
   color: #0284c7;
 }
 
+/* Light mode card stays slightly dark/professional */
+
 [data-theme="light"] .mini-card {
   background:
     radial-gradient(
       circle at 85% 15%,
-      rgba(45, 212, 191, 0.18),
+      rgba(45, 212, 191, 0.20),
       transparent 30%
     ),
-    linear-gradient(135deg, #e6f4f4, #eaf2fb);
+    linear-gradient(135deg, #183247, #102536);
 
-  border-color: rgba(15, 118, 110, 0.12);
+  border-color: rgba(45, 212, 191, 0.18);
 
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
 }
 
 [data-theme="light"] .mini-card-top {
-  color: #0f172a;
+  color: #f8fafc;
 }
 
 [data-theme="light"] .mini-card-top span {
-  color: #0f766e;
+  color: #5eead4;
 }
 
 [data-theme="light"] .mini-card-number {
-  color: #334155;
+  color: #cbd5e1;
 }
 
 [data-theme="light"] .mini-card-bottom small {
-  color: #64748b;
+  color: #94a3b8;
 }
 
 [data-theme="light"] .mini-card-bottom strong {
-  color: #334155;
+  color: #f1f5f9;
 }
 
 [data-theme="light"] .payment-panel > p {
@@ -971,6 +989,10 @@
 
 [data-theme="light"] .payment-security {
   border-top-color: rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .payment-security strong {
+  color: #334155;
 }
 
 [data-theme="light"] .payment-security p {
@@ -989,19 +1011,11 @@
   color: #0f172a;
 }
 
-[data-theme="light"] .transaction-name small {
-  color: #64748b;
-}
-
 [data-theme="light"] .transaction-row > strong {
   color: #0f172a;
 }
 
 [data-theme="light"] .transaction-date {
-  color: #64748b;
-}
-
-[data-theme="light"] .empty-state {
   color: #64748b;
 }
 
@@ -1041,8 +1055,8 @@
   }
 
   .theme-toggle {
-    min-width: 40px;
     width: 40px;
+    min-width: 40px;
     height: 38px;
     padding: 8px;
   }
@@ -1053,6 +1067,11 @@
 
   .secure-badge {
     display: none;
+  }
+
+  .logout-button {
+    padding: 9px 11px;
+    font-size: 11px;
   }
 
   .dashboard-main {
@@ -1098,11 +1117,11 @@
 }
 
 /* =========================================================
-   REDUCED MOTION ACCESSIBILITY
+   REDUCED MOTION
 ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
-  .dashboard-page,
+  .dashboard-page *,
   .dashboard-header,
   .dashboard-date,
   .stat-card,
@@ -1111,10 +1130,8 @@
   .payment-security,
   .logout-button,
   .theme-toggle,
-  .mini-card,
-  .payment-button,
-  .panel-action {
-    transition: none;
+  .mini-card {
+    transition: none !important;
   }
 
   .stat-skeleton {
@@ -1125,7 +1142,202 @@
   .payment-button:hover,
   .logout-button:hover,
   .theme-toggle:hover,
-  .panel-action:hover {
+  .panel-action:hover,
+  .stat-card:hover {
     transform: none;
   }
+}
+
+/* =====================================================
+   CARDPAY THEME TOGGLE
+===================================================== */
+
+.dashboard-header-right {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+}
+
+
+.theme-toggle {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  min-width: 96px;
+
+  height: 42px;
+
+  padding: 0 15px;
+
+  border: 1px solid
+    rgba(45, 212, 191, 0.45);
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.98),
+      rgba(8, 47, 73, 0.98)
+    );
+
+  color: #f8fafc;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.2px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 24px
+    rgba(0, 0, 0, 0.25);
+
+  transition:
+    transform 0.2s ease,
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+
+.theme-toggle:hover {
+
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(45, 212, 191, 0.9);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(13, 148, 136, 0.28),
+      rgba(14, 116, 144, 0.35)
+    );
+
+  box-shadow:
+    0 10px 30px
+    rgba(20, 184, 166, 0.2);
+}
+
+
+.theme-toggle:active {
+
+  transform:
+    translateY(0);
+}
+
+
+.theme-toggle-icon {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 22px;
+
+  height: 22px;
+
+  font-size: 17px;
+
+  line-height: 1;
+}
+
+
+.theme-toggle-text {
+
+  display: inline-block;
+}
+
+
+/* =====================================================
+   LIGHT MODE THEME BUTTON
+===================================================== */
+
+:root[data-theme="light"]
+.theme-toggle {
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #e2e8f0
+    );
+
+  color: #0f172a;
+
+  border-color:
+    #cbd5e1;
+
+  box-shadow:
+    0 8px 22px
+    rgba(15, 23, 42, 0.1);
+}
+
+
+:root[data-theme="light"]
+.theme-toggle:hover {
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fafc,
+      #dbeafe
+    );
+
+  border-color:
+    #cfda79;
+
+  box-shadow:
+    0 10px 28px
+    rgba(14, 116, 144, 0.15);
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+
+  .dashboard-header-right {
+
+    gap: 8px;
+
+  }
+
+  .theme-toggle {
+
+    min-width: 44px;
+
+    width: 44px;
+
+    padding: 0;
+
+  }
+
+  .theme-toggle-text {
+
+    display: none;
+
+  }
+
 }

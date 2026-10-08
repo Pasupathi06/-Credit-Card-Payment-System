@@ -21,6 +21,10 @@
       - mysql
     environment:
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+
+      # 🔴 ADD THIS LINE
+      JWT_SECRET_KEY: EKAXEsiAcLF9UnTg3jWI9qcqw0pJlUzczyhzfsdZQ1y-AHz3ewTeSSx238a9n3L9
+
       MYSQL_DATABASE: credit_card_payment_db
       MYSQL_USER: root
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}

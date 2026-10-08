@@ -61,7 +61,6 @@ ALLOWED_HOSTS = [
 # ============================================================
 
 INSTALLED_APPS = [
-    # Django built-in apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -69,19 +68,16 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Third-party apps
     "rest_framework",
     "corsheaders",
     "drf_spectacular",
     "rest_framework_simplejwt.token_blacklist",
 
-    # Project apps
     "users",
     "cards",
     "transactions",
     "admin_logs",
 
-    # Email notification app
     "email_notifications.apps.EmailNotificationsConfig",
 ]
 
@@ -276,19 +272,34 @@ JWT_SECRET_KEY = os.getenv(
     "",
 )
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+# Do not allow Django to silently use a different secret.
+if not JWT_SECRET_KEY:
+    raise RuntimeError(
+        "JWT_SECRET_KEY is missing. "
+        "Please configure JWT_SECRET_KEY in django_backend/.env "
+        "and Docker Compose environment variables."
+    )
 
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        minutes=30
+    ),
+
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=1
+    ),
 
     "ROTATE_REFRESH_TOKENS": False,
 
     "BLACKLIST_AFTER_ROTATION": False,
 
-    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_TYPES": (
+        "Bearer",
+    ),
 
     # IMPORTANT:
-    # Django JWT and FastAPI JWT use the same secret.
+    # Django and FastAPI MUST use the same JWT secret.
     "SIGNING_KEY": JWT_SECRET_KEY,
 }
 

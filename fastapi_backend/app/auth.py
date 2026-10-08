@@ -1,16 +1,21 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+from jose import ExpiredSignatureError, JWTError, jwt
 
 from .config import settings
 
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=True)
 
 
 def get_current_user_id(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> int:
+    """
+    Validate Django SimpleJWT access token
+    and return the authenticated user's ID.
+    """
+
     token = credentials.credentials
 
     try:
@@ -26,12 +31,28 @@ def get_current_user_id(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token: user_id missing",
+                headers={"WWW-Authenticate": "Bearer"},
             )
 
-        return int(user_id)
+        try:
+            return int(user_id)
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: user_id is not valid",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
-    except (JWTError, ValueError, TypeError):
+    except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired JWT token",
+            detail="Access token has expired. Please login again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired JWT token.",
+            headers={"WWW-Authenticate": "Bearer"},
         )

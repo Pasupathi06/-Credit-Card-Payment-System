@@ -39,12 +39,15 @@ function Dashboard({ onLogout }) {
           },
         }
 
-        const [cardsResponse, transactionsResponse, summaryResponse] =
-          await Promise.all([
-            djangoApi.get('/cards/', authConfig),
-            djangoApi.get('/transactions/', authConfig),
-            fastApi.get('/dashboard/summary', authConfig),
-          ])
+        const [
+          cardsResponse,
+          transactionsResponse,
+          summaryResponse,
+        ] = await Promise.all([
+          djangoApi.get('/cards/', authConfig),
+          djangoApi.get('/transactions/', authConfig),
+          fastApi.get('/dashboard/summary', authConfig),
+        ])
 
         setCards(cardsResponse.data)
         setTransactions(transactionsResponse.data)
@@ -100,10 +103,6 @@ function Dashboard({ onLogout }) {
     }
   }
 
-  const successfulTransactions = transactions.filter(
-    (transaction) => transaction.status === 'SUCCESS'
-  )
-
   const formatAmount = (amount) => {
     return `₹${Number(amount || 0).toFixed(2)}`
   }
@@ -123,7 +122,8 @@ function Dashboard({ onLogout }) {
   return (
     <div className="dashboard-page">
 
-      {/* HEADER */}
+      {/* ================= HEADER ================= */}
+
       <header className="dashboard-header">
 
         <div className="dashboard-brand">
@@ -142,32 +142,41 @@ function Dashboard({ onLogout }) {
         <div className="dashboard-header-right">
 
           {/* THEME TOGGLE */}
+
           <button
             type="button"
             className="theme-toggle"
             onClick={toggleTheme}
-            aria-label={`Switch to ${
-              theme === 'dark' ? 'light' : 'dark'
-            } mode`}
-            title={`Switch to ${
-              theme === 'dark' ? 'light' : 'dark'
-            } mode`}
+            aria-label={
+              theme === 'dark'
+                ? 'Switch to light mode'
+                : 'Switch to dark mode'
+            }
+            title={
+              theme === 'dark'
+                ? 'Switch to light mode'
+                : 'Switch to dark mode'
+            }
           >
+
             <span className="theme-toggle-icon">
               {theme === 'dark' ? '☀️' : '🌙'}
             </span>
 
-            <span>
+            <span className="theme-toggle-text">
               {theme === 'dark' ? 'Light' : 'Dark'}
             </span>
+
           </button>
 
-          {/* SECURITY BADGE */}
+          {/* SECURITY */}
+
           <div className="secure-badge">
             🔒 Secure
           </div>
 
           {/* LOGOUT */}
+
           <button
             type="button"
             className="logout-button"
@@ -180,10 +189,12 @@ function Dashboard({ onLogout }) {
 
       </header>
 
-      {/* MAIN */}
+      {/* ================= MAIN ================= */}
+
       <main className="dashboard-main">
 
         {/* WELCOME */}
+
         <section className="dashboard-welcome">
 
           <div>
@@ -217,16 +228,17 @@ function Dashboard({ onLogout }) {
         </section>
 
         {/* ERROR */}
+
         {error && (
           <div className="dashboard-error">
             {error}
           </div>
         )}
 
-        {/* USAGE STATS */}
+        {/* ================= STATS ================= */}
+
         <section className="dashboard-stats">
 
-          {/* TOTAL SPENT */}
           <div className="stat-card">
 
             <div className="stat-icon">
@@ -234,10 +246,7 @@ function Dashboard({ onLogout }) {
             </div>
 
             <div>
-
-              <span>
-                Total Spent
-              </span>
+              <span>Total Spent</span>
 
               {loading ? (
                 <div className="stat-skeleton" />
@@ -251,7 +260,6 @@ function Dashboard({ onLogout }) {
 
           </div>
 
-          {/* AVAILABLE CREDIT */}
           <div className="stat-card">
 
             <div className="stat-icon">
@@ -259,10 +267,7 @@ function Dashboard({ onLogout }) {
             </div>
 
             <div>
-
-              <span>
-                Available Credit
-              </span>
+              <span>Available Credit</span>
 
               {loading ? (
                 <div className="stat-skeleton" />
@@ -279,7 +284,6 @@ function Dashboard({ onLogout }) {
 
           </div>
 
-          {/* TOTAL TRANSACTIONS */}
           <div className="stat-card">
 
             <div className="stat-icon">
@@ -287,10 +291,7 @@ function Dashboard({ onLogout }) {
             </div>
 
             <div>
-
-              <span>
-                Total Transactions
-              </span>
+              <span>Total Transactions</span>
 
               {loading ? (
                 <div className="stat-skeleton" />
@@ -304,7 +305,6 @@ function Dashboard({ onLogout }) {
 
           </div>
 
-          {/* CURRENT MONTH */}
           <div className="stat-card">
 
             <div className="stat-icon">
@@ -312,10 +312,7 @@ function Dashboard({ onLogout }) {
             </div>
 
             <div>
-
-              <span>
-                This Month Spending
-              </span>
+              <span>This Month Spending</span>
 
               {loading ? (
                 <div className="stat-skeleton" />
@@ -331,10 +328,12 @@ function Dashboard({ onLogout }) {
 
         </section>
 
-        {/* CONTENT GRID */}
+        {/* ================= CONTENT GRID ================= */}
+
         <section className="dashboard-grid">
 
-          {/* CARDS */}
+          {/* MY CARDS */}
+
           <div className="dashboard-panel">
 
             <div className="panel-header">
@@ -361,9 +360,11 @@ function Dashboard({ onLogout }) {
             </div>
 
             {loading ? (
+
               <div className="empty-state">
                 Loading cards...
               </div>
+
             ) : cards.length === 0 ? (
 
               <div className="empty-state">
@@ -450,6 +451,7 @@ function Dashboard({ onLogout }) {
           </div>
 
           {/* QUICK PAYMENT */}
+
           <div className="dashboard-panel payment-panel">
 
             <span className="panel-label">
@@ -496,7 +498,8 @@ function Dashboard({ onLogout }) {
 
         </section>
 
-        {/* TRANSACTIONS */}
+        {/* ================= TRANSACTIONS ================= */}
+
         <section className="dashboard-panel transactions-panel">
 
           <div className="panel-header">
@@ -556,21 +559,10 @@ function Dashboard({ onLogout }) {
 
               <div className="transaction-row transaction-heading">
 
-                <span>
-                  Transaction
-                </span>
-
-                <span>
-                  Amount
-                </span>
-
-                <span>
-                  Status
-                </span>
-
-                <span>
-                  Date
-                </span>
+                <span>Transaction</span>
+                <span>Amount</span>
+                <span>Status</span>
+                <span>Date</span>
 
               </div>
 
@@ -631,7 +623,8 @@ function Dashboard({ onLogout }) {
 
       </main>
 
-      {/* FOOTER */}
+      {/* ================= FOOTER ================= */}
+
       <footer className="dashboard-footer">
 
         <span>
