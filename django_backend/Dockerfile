@@ -18,7 +18,9 @@ RUN pip install --no-cache-dir \
     mysqlclient \
     django-cors-headers \
     drf-spectacular \
-    coverage
+    coverage \
+    python-dotenv \
+    reportlab
 
 EXPOSE 8000
 

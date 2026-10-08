@@ -27,6 +27,7 @@ from .serializers import (
     TransactionSerializer,
     PaymentSyncSerializer,
 )
+from .statement_service import generate_monthly_statement
 
 
 # ==========================================
@@ -682,4 +683,91 @@ class AdminDashboardSummaryView(APIView):
                     ),
                 },
             }
+        )
+
+
+# ==========================================
+# Monthly Statement PDF
+# ==========================================
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="year",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description="Statement year. Example: 2026",
+        ),
+        OpenApiParameter(
+            name="month",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description="Statement month. Value must be between 1 and 12.",
+        ),
+    ]
+)
+class MonthlyStatementView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+
+        # --------------------------------
+        # Get year and month
+        # --------------------------------
+
+        year = request.query_params.get("year")
+        month = request.query_params.get("month")
+
+        # --------------------------------
+        # Required parameters
+        # --------------------------------
+
+        if not year or not month:
+            return Response(
+                {
+                    "detail": (
+                        "year and month are required."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # --------------------------------
+        # Validate year and month
+        # --------------------------------
+
+        try:
+            year = int(year)
+            month = int(month)
+
+        except (TypeError, ValueError):
+            return Response(
+                {
+                    "detail": (
+                        "Invalid year or month."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if month < 1 or month > 12:
+            return Response(
+                {
+                    "detail": (
+                        "Month must be between 1 and 12."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # --------------------------------
+        # Generate PDF
+        # --------------------------------
+
+        return generate_monthly_statement(
+            user=request.user,
+            year=year,
+            month=month,
         )

@@ -26,12 +26,16 @@ class CardSerializer(serializers.ModelSerializer):
             "card_type",
             "expiry_month",
             "expiry_year",
+            "credit_limit",
+            "is_blocked",
             "created_at",
         ]
 
         read_only_fields = [
             "id",
             "masked_card_number",
+            "credit_limit",
+            "is_blocked",
             "created_at",
         ]
 

@@ -22,10 +22,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # LOAD ENVIRONMENT VARIABLES
 # ============================================================
 
-# Loads variables from:
-# C:\Users\pasup\OneDrive\Desktop\Credit Card Payment System\
-# django_backend\.env
-
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -33,7 +29,10 @@ load_dotenv(BASE_DIR / ".env")
 # INTERNAL API CONFIGURATION
 # ============================================================
 
-INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY", "")
+INTERNAL_API_KEY = os.getenv(
+    "INTERNAL_API_KEY",
+    "",
+)
 
 
 # ============================================================
@@ -42,7 +41,7 @@ INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY", "")
 
 SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY",
-    "django-insecure-x-n$wv5k2!$go3^d%&79^$1u54!9()8xym3-4z6vat_q4xgsy)",
+    "django-insecure-change-this-secret-key",
 )
 
 DEBUG = os.getenv(
@@ -81,6 +80,9 @@ INSTALLED_APPS = [
     "cards",
     "transactions",
     "admin_logs",
+
+    # Email notification app
+    "email_notifications.apps.EmailNotificationsConfig",
 ]
 
 
@@ -269,6 +271,11 @@ SPECTACULAR_SETTINGS = {
 # JWT CONFIGURATION
 # ============================================================
 
+JWT_SECRET_KEY = os.getenv(
+    "JWT_SECRET_KEY",
+    "",
+)
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
 
@@ -279,6 +286,10 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": False,
 
     "AUTH_HEADER_TYPES": ("Bearer",),
+
+    # IMPORTANT:
+    # Django JWT and FastAPI JWT use the same secret.
+    "SIGNING_KEY": JWT_SECRET_KEY,
 }
 
 
@@ -316,6 +327,48 @@ STATIC_URL = "static/"
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+# ============================================================
+# EMAIL CONFIGURATION
+# ============================================================
+
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend",
+)
+
+EMAIL_HOST = os.getenv(
+    "EMAIL_HOST",
+    "smtp.gmail.com",
+)
+
+EMAIL_PORT = int(
+    os.getenv(
+        "EMAIL_PORT",
+        "587",
+    )
+)
+
+EMAIL_USE_TLS = os.getenv(
+    "EMAIL_USE_TLS",
+    "True",
+).lower() == "true"
+
+EMAIL_HOST_USER = os.getenv(
+    "EMAIL_HOST_USER",
+    "",
+)
+
+EMAIL_HOST_PASSWORD = os.getenv(
+    "EMAIL_HOST_PASSWORD",
+    "",
+)
+
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    EMAIL_HOST_USER,
+)
 
 
 # ============================================================

@@ -8,6 +8,8 @@ class AdminLog(models.Model):
         ("USER_UPDATE", "User Update"),
         ("USER_DELETE", "User Delete"),
         ("CARD_VIEW", "Card View"),
+        ("CARD_STATUS_UPDATE", "Card Status Update"),
+        ("CREDIT_LIMIT_UPDATE", "Credit Limit Update"),
         ("TRANSACTION_VIEW", "Transaction View"),
         ("CSV_EXPORT", "CSV Export"),
         ("DASHBOARD_VIEW", "Dashboard View"),

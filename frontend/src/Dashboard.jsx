@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { djangoApi, fastApi } from './api'
+import { useTheme } from './ThemeContext'
 import './Dashboard.css'
 
 function Dashboard({ onLogout }) {
@@ -8,6 +9,8 @@ function Dashboard({ onLogout }) {
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  const { theme, toggleTheme } = useTheme()
 
   const getToken = () => {
     return (
@@ -124,6 +127,7 @@ function Dashboard({ onLogout }) {
       <header className="dashboard-header">
 
         <div className="dashboard-brand">
+
           <div className="dashboard-logo">
             ✦
           </div>
@@ -132,19 +136,46 @@ function Dashboard({ onLogout }) {
             <h1>CardPay</h1>
             <span>FINANCIAL PLATFORM</span>
           </div>
+
         </div>
 
         <div className="dashboard-header-right">
+
+          {/* THEME TOGGLE */}
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${
+              theme === 'dark' ? 'light' : 'dark'
+            } mode`}
+            title={`Switch to ${
+              theme === 'dark' ? 'light' : 'dark'
+            } mode`}
+          >
+            <span className="theme-toggle-icon">
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </span>
+
+            <span>
+              {theme === 'dark' ? 'Light' : 'Dark'}
+            </span>
+          </button>
+
+          {/* SECURITY BADGE */}
           <div className="secure-badge">
             🔒 Secure
           </div>
 
+          {/* LOGOUT */}
           <button
+            type="button"
             className="logout-button"
             onClick={handleLogout}
           >
             Logout
           </button>
+
         </div>
 
       </header>
@@ -156,6 +187,7 @@ function Dashboard({ onLogout }) {
         <section className="dashboard-welcome">
 
           <div>
+
             <span className="dashboard-eyebrow">
               SECURE DIGITAL PAYMENTS
             </span>
@@ -167,11 +199,19 @@ function Dashboard({ onLogout }) {
             <p>
               Manage your cards, payments and transactions from one place.
             </p>
+
           </div>
 
           <div className="dashboard-date">
-            <span>ACCOUNT STATUS</span>
-            <strong>● Active</strong>
+
+            <span>
+              ACCOUNT STATUS
+            </span>
+
+            <strong>
+              ● Active
+            </strong>
+
           </div>
 
         </section>
@@ -188,10 +228,16 @@ function Dashboard({ onLogout }) {
 
           {/* TOTAL SPENT */}
           <div className="stat-card">
-            <div className="stat-icon">₹</div>
+
+            <div className="stat-icon">
+              ₹
+            </div>
 
             <div>
-              <span>Total Spent</span>
+
+              <span>
+                Total Spent
+              </span>
 
               {loading ? (
                 <div className="stat-skeleton" />
@@ -200,15 +246,23 @@ function Dashboard({ onLogout }) {
                   {formatAmount(summary?.total_amount_spent)}
                 </strong>
               )}
+
             </div>
+
           </div>
 
           {/* AVAILABLE CREDIT */}
           <div className="stat-card">
-            <div className="stat-icon">💳</div>
+
+            <div className="stat-icon">
+              💳
+            </div>
 
             <div>
-              <span>Available Credit</span>
+
+              <span>
+                Available Credit
+              </span>
 
               {loading ? (
                 <div className="stat-skeleton" />
@@ -220,15 +274,23 @@ function Dashboard({ onLogout }) {
                     : 'Not available'}
                 </strong>
               )}
+
             </div>
+
           </div>
 
           {/* TOTAL TRANSACTIONS */}
           <div className="stat-card">
-            <div className="stat-icon">↔</div>
+
+            <div className="stat-icon">
+              ↔
+            </div>
 
             <div>
-              <span>Total Transactions</span>
+
+              <span>
+                Total Transactions
+              </span>
 
               {loading ? (
                 <div className="stat-skeleton" />
@@ -237,15 +299,23 @@ function Dashboard({ onLogout }) {
                   {summary?.total_transactions ?? 0}
                 </strong>
               )}
+
             </div>
+
           </div>
 
           {/* CURRENT MONTH */}
           <div className="stat-card">
-            <div className="stat-icon">📅</div>
+
+            <div className="stat-icon">
+              📅
+            </div>
 
             <div>
-              <span>This Month Spending</span>
+
+              <span>
+                This Month Spending
+              </span>
 
               {loading ? (
                 <div className="stat-skeleton" />
@@ -254,7 +324,9 @@ function Dashboard({ onLogout }) {
                   {formatAmount(summary?.current_month_spending)}
                 </strong>
               )}
+
             </div>
+
           </div>
 
         </section>
@@ -266,17 +338,26 @@ function Dashboard({ onLogout }) {
           <div className="dashboard-panel">
 
             <div className="panel-header">
+
               <div>
+
                 <span className="panel-label">
                   PAYMENT METHODS
                 </span>
 
-                <h3>My Cards</h3>
+                <h3>
+                  My Cards
+                </h3>
+
               </div>
 
-              <button className="panel-action">
+              <button
+                type="button"
+                className="panel-action"
+              >
                 + Add Card
               </button>
+
             </div>
 
             {loading ? (
@@ -284,27 +365,44 @@ function Dashboard({ onLogout }) {
                 Loading cards...
               </div>
             ) : cards.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">💳</div>
 
-                <strong>No cards added yet</strong>
+              <div className="empty-state">
+
+                <div className="empty-icon">
+                  💳
+                </div>
+
+                <strong>
+                  No cards added yet
+                </strong>
 
                 <p>
                   Add your first card to start making payments.
                 </p>
+
               </div>
+
             ) : (
+
               <div className="cards-list">
 
                 {cards.map((card) => (
+
                   <div
                     className="mini-card"
                     key={card.id}
                   >
 
                     <div className="mini-card-top">
-                      <strong>CARDPAY</strong>
-                      <span>{card.card_type}</span>
+
+                      <strong>
+                        CARDPAY
+                      </strong>
+
+                      <span>
+                        {card.card_type}
+                      </span>
+
                     </div>
 
                     <div className="mini-card-number">
@@ -315,28 +413,38 @@ function Dashboard({ onLogout }) {
                     <div className="mini-card-bottom">
 
                       <div>
-                        <small>CARD HOLDER</small>
+
+                        <small>
+                          CARD HOLDER
+                        </small>
 
                         <strong>
                           {card.card_holder_name}
                         </strong>
+
                       </div>
 
                       <div>
-                        <small>EXPIRY</small>
+
+                        <small>
+                          EXPIRY
+                        </small>
 
                         <strong>
                           {String(card.expiry_month).padStart(2, '0')}/
                           {card.expiry_year}
                         </strong>
+
                       </div>
 
                     </div>
 
                   </div>
+
                 ))}
 
               </div>
+
             )}
 
           </div>
@@ -348,27 +456,40 @@ function Dashboard({ onLogout }) {
               QUICK ACTION
             </span>
 
-            <h3>Make a Payment</h3>
+            <h3>
+              Make a Payment
+            </h3>
 
             <p>
               Securely make a payment using one of your saved cards.
             </p>
 
-            <button className="payment-button">
+            <button
+              type="button"
+              className="payment-button"
+            >
               Make Payment
               <span>→</span>
             </button>
 
             <div className="payment-security">
-              <span>🔐</span>
+
+              <span>
+                🔐
+              </span>
 
               <div>
-                <strong>Secure Payment</strong>
+
+                <strong>
+                  Secure Payment
+                </strong>
 
                 <p>
                   Your card number and CVV are never stored.
                 </p>
+
               </div>
+
             </div>
 
           </div>
@@ -381,26 +502,38 @@ function Dashboard({ onLogout }) {
           <div className="panel-header">
 
             <div>
+
               <span className="panel-label">
                 PAYMENT ACTIVITY
               </span>
 
-              <h3>Last 5 Transactions</h3>
+              <h3>
+                Last 5 Transactions
+              </h3>
+
             </div>
 
-            <button className="panel-action">
+            <button
+              type="button"
+              className="panel-action"
+            >
               View All
             </button>
 
           </div>
 
           {loading ? (
+
             <div className="empty-state">
+
               <div className="transaction-loading">
                 Loading transactions...
               </div>
+
             </div>
+
           ) : summary?.last_5_transactions?.length === 0 ? (
+
             <div className="empty-state">
 
               <div className="empty-icon">
@@ -416,18 +549,34 @@ function Dashboard({ onLogout }) {
               </p>
 
             </div>
+
           ) : (
+
             <div className="transactions-table">
 
               <div className="transaction-row transaction-heading">
-                <span>Transaction</span>
-                <span>Amount</span>
-                <span>Status</span>
-                <span>Date</span>
+
+                <span>
+                  Transaction
+                </span>
+
+                <span>
+                  Amount
+                </span>
+
+                <span>
+                  Status
+                </span>
+
+                <span>
+                  Date
+                </span>
+
               </div>
 
               {summary?.last_5_transactions?.map(
                 (transaction, index) => (
+
                   <div
                     className="transaction-row"
                     key={`${transaction.date}-${index}`}
@@ -470,10 +619,12 @@ function Dashboard({ onLogout }) {
                     </span>
 
                   </div>
+
                 )
               )}
 
             </div>
+
           )}
 
         </section>

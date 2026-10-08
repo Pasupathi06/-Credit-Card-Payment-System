@@ -7,6 +7,7 @@ from .views import (
     InternalPaymentSyncView,
     AdminTransactionCSVExportView,
     AdminDashboardSummaryView,
+    MonthlyStatementView,
 )
 
 
@@ -20,6 +21,16 @@ urlpatterns = [
         "",
         TransactionListView.as_view(),
         name="transaction-list",
+    ),
+
+    # ==========================================
+    # Monthly Statement PDF
+    # ==========================================
+
+    path(
+        "monthly-statement/",
+        MonthlyStatementView.as_view(),
+        name="monthly-statement",
     ),
 
     # ==========================================
