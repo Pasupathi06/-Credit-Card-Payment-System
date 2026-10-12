@@ -1,5 +1,6 @@
 import csv
 
+from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
@@ -55,19 +56,13 @@ from .statement_service import generate_monthly_statement
             name="date_from",
             type=OpenApiTypes.DATE,
             location=OpenApiParameter.QUERY,
-            description=(
-                "Filter transactions from this date "
-                "(YYYY-MM-DD)"
-            ),
+            description="Filter transactions from this date (YYYY-MM-DD)",
         ),
         OpenApiParameter(
             name="date_to",
             type=OpenApiTypes.DATE,
             location=OpenApiParameter.QUERY,
-            description=(
-                "Filter transactions up to this date "
-                "(YYYY-MM-DD)"
-            ),
+            description="Filter transactions up to this date (YYYY-MM-DD)",
         ),
     ]
 )
@@ -82,45 +77,31 @@ class TransactionListView(generics.ListAPIView):
             .select_related("card")
         )
 
-        # --------------------------------
         # Filter by status
-        # --------------------------------
-
-        status_value = self.request.query_params.get(
-            "status"
-        )
+        status_value = self.request.query_params.get("status")
 
         if status_value:
             queryset = queryset.filter(
                 status=status_value.upper()
             )
 
-        # --------------------------------
         # Filter by exact amount
-        # --------------------------------
-
-        amount = self.request.query_params.get(
-            "amount"
-        )
+        amount = self.request.query_params.get("amount")
 
         if amount:
             try:
                 amount_value = Decimal(amount)
 
-                queryset = queryset.filter(
-                    amount=amount_value
-                )
+                if amount_value.is_finite():
+                    queryset = queryset.filter(
+                        amount=amount_value
+                    )
 
             except (InvalidOperation, ValueError):
                 pass
 
-        # --------------------------------
         # Filter from date
-        # --------------------------------
-
-        date_from = self.request.query_params.get(
-            "date_from"
-        )
+        date_from = self.request.query_params.get("date_from")
 
         if date_from:
             parsed_date = parse_date(date_from)
@@ -130,13 +111,8 @@ class TransactionListView(generics.ListAPIView):
                     created_at__date__gte=parsed_date
                 )
 
-        # --------------------------------
         # Filter to date
-        # --------------------------------
-
-        date_to = self.request.query_params.get(
-            "date_to"
-        )
+        date_to = self.request.query_params.get("date_to")
 
         if date_to:
             parsed_date = parse_date(date_to)
@@ -158,7 +134,6 @@ class AdminTransactionListView(generics.ListAPIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get_queryset(self):
-
         AdminLog.objects.create(
             admin=self.request.user,
             action="TRANSACTION_VIEW",
@@ -168,11 +143,243 @@ class AdminTransactionListView(generics.ListAPIView):
 
         return (
             Transaction.objects
-            .select_related(
-                "user",
-                "card",
-            )
+            .select_related("user", "card")
             .order_by("-created_at")
+        )
+
+
+# ==========================================
+# INTERNAL FastAPI -> Django Card Validation
+# ==========================================
+
+class InternalCardValidationView(APIView):
+    """
+    Internal endpoint used by FastAPI to validate a card
+    before attempting a payment.
+
+    Required header:
+        X-Internal-API-Key
+
+    Request body:
+        {
+            "user_id": 1,
+            "card_id": 1,
+            "amount": "100.00"
+        }
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(
+        request=OpenApiTypes.OBJECT,
+        responses={200: OpenApiTypes.OBJECT},
+        description=(
+            "Internally validate card ownership, block status, "
+            "expiry and available credit."
+        ),
+    )
+    def post(self, request):
+
+        # --------------------------------
+        # Validate internal API key
+        # --------------------------------
+
+        provided_key = request.headers.get(
+            "X-Internal-API-Key"
+        )
+
+        configured_key = getattr(
+            settings,
+            "INTERNAL_API_KEY",
+            "",
+        )
+
+        if not configured_key:
+            return Response(
+                {
+                    "detail": "Internal API key is not configured."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        if not provided_key or provided_key != configured_key:
+            return Response(
+                {
+                    "detail": "Invalid internal API key."
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # --------------------------------
+        # Validate request data
+        # --------------------------------
+
+        try:
+            user_id = int(request.data.get("user_id"))
+            card_id = int(request.data.get("card_id"))
+
+            amount = Decimal(
+                str(request.data.get("amount"))
+            )
+
+        except (TypeError, ValueError, InvalidOperation):
+            return Response(
+                {
+                    "detail": (
+                        "Valid user_id, card_id and amount "
+                        "are required."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if (
+            user_id <= 0
+            or card_id <= 0
+            or not amount.is_finite()
+            or amount <= 0
+        ):
+            return Response(
+                {
+                    "detail": (
+                        "IDs and amount must be positive, "
+                        "and amount must be a valid number."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # --------------------------------
+        # Validate card ownership
+        # --------------------------------
+
+        card = Card.objects.filter(
+            id=card_id,
+            user_id=user_id,
+        ).first()
+
+        if not card:
+            return Response(
+                {
+                    "valid": False,
+                    "detail": "Card not found for this user.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # --------------------------------
+        # Check blocked card
+        # --------------------------------
+
+        if card.is_blocked:
+            return Response(
+                {
+                    "valid": False,
+                    "detail": "This card is blocked.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # --------------------------------
+        # Check card expiry
+        # --------------------------------
+
+        today = date.today()
+
+        if (
+            card.expiry_year < today.year
+            or (
+                card.expiry_year == today.year
+                and card.expiry_month < today.month
+            )
+        ):
+            return Response(
+                {
+                    "valid": False,
+                    "detail": "This card has expired.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # --------------------------------
+        # Validate credit limit
+        # --------------------------------
+
+        if (
+            card.credit_limit is None
+            or card.credit_limit <= Decimal("0.00")
+        ):
+            return Response(
+                {
+                    "valid": False,
+                    "detail": (
+                        "A valid credit limit is not configured "
+                        "for this card."
+                    ),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # --------------------------------
+        # Calculate successful spending
+        # --------------------------------
+
+        spending_data = Transaction.objects.filter(
+            card=card,
+            status="SUCCESS",
+        ).aggregate(
+            total=Sum("amount")
+        )
+
+        total_spent = (
+            spending_data["total"]
+            or Decimal("0.00")
+        )
+
+        available_credit = (
+            card.credit_limit - total_spent
+        )
+
+        # --------------------------------
+        # Check available credit
+        # --------------------------------
+
+        if amount > available_credit:
+            return Response(
+                {
+                    "valid": False,
+                    "detail": "Insufficient available credit.",
+                    "credit_limit": str(card.credit_limit),
+                    "total_spent": str(total_spent),
+                    "available_credit": str(
+                        max(
+                            available_credit,
+                            Decimal("0.00"),
+                        )
+                    ),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # --------------------------------
+        # Card validation successful
+        # --------------------------------
+
+        return Response(
+            {
+                "valid": True,
+                "message": "Card validation successful.",
+                "user_id": user_id,
+                "card_id": card.id,
+                "masked_card": (
+                    f"**** **** **** {card.last4}"
+                ),
+                "amount": str(amount),
+                "credit_limit": str(card.credit_limit),
+                "total_spent": str(total_spent),
+                "available_credit": str(available_credit),
+            },
+            status=status.HTTP_200_OK,
         )
 
 
@@ -188,14 +395,9 @@ class PaymentSyncView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-
         serializer = PaymentSyncSerializer(
             data=request.data
         )
-
-        # --------------------------------
-        # Validate request data
-        # --------------------------------
 
         if not serializer.is_valid():
             return Response(
@@ -205,27 +407,17 @@ class PaymentSyncView(APIView):
 
         data = serializer.validated_data
 
-        # --------------------------------
-        # Make sure payment belongs
-        # to logged-in user
-        # --------------------------------
-
+        # Verify logged-in user
         if data["user_id"] != request.user.id:
             return Response(
-                {
-                    "detail": "User mismatch."
-                },
+                {"detail": "User mismatch."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
         card = None
 
-        # --------------------------------
         # Validate card ownership
-        # --------------------------------
-
         if data.get("card_id"):
-
             card = Card.objects.filter(
                 id=data["card_id"],
                 user=request.user,
@@ -234,35 +426,22 @@ class PaymentSyncView(APIView):
             if not card:
                 return Response(
                     {
-                        "detail": (
-                            "Card not found for this user."
-                        )
+                        "detail": "Card not found for this user."
                     },
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-        # --------------------------------
         # Create or update transaction
-        # --------------------------------
-
-        transaction, created = (
-            Transaction.objects.update_or_create(
-                payment_id=data["payment_id"],
-                defaults={
-                    "user": request.user,
-                    "card": card,
-                    "amount": data["amount"],
-                    "status": data["status"],
-                    "description": data.get(
-                        "description"
-                    ),
-                },
-            )
+        transaction, created = Transaction.objects.update_or_create(
+            payment_id=data["payment_id"],
+            defaults={
+                "user": request.user,
+                "card": card,
+                "amount": data["amount"],
+                "status": data["status"],
+                "description": data.get("description"),
+            },
         )
-
-        # --------------------------------
-        # Response
-        # --------------------------------
 
         return Response(
             {
@@ -289,18 +468,15 @@ class PaymentSyncView(APIView):
 
 class InternalPaymentSyncView(APIView):
     """
-    Internal endpoint used by FastAPI to sync
-    completed payments into Django transactions.
+    Internal endpoint used by FastAPI to sync payments
+    into Django transactions.
     """
 
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
 
-        # --------------------------------
         # Validate internal API key
-        # --------------------------------
-
         internal_key = request.headers.get(
             "X-Internal-API-Key"
         )
@@ -308,41 +484,24 @@ class InternalPaymentSyncView(APIView):
         configured_key = getattr(
             settings,
             "INTERNAL_API_KEY",
-            ""
+            "",
         )
-
-        if not internal_key:
-            return Response(
-                {
-                    "detail": (
-                        "Internal API key is required."
-                    )
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
 
         if not configured_key:
             return Response(
                 {
-                    "detail": (
-                        "Internal API key is not configured."
-                    )
+                    "detail": "Internal API key is not configured."
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        if internal_key != configured_key:
+        if not internal_key or internal_key != configured_key:
             return Response(
-                {
-                    "detail": "Invalid internal API key."
-                },
+                {"detail": "Invalid internal API key."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # --------------------------------
         # Validate payment data
-        # --------------------------------
-
         serializer = PaymentSyncSerializer(
             data=request.data
         )
@@ -355,10 +514,7 @@ class InternalPaymentSyncView(APIView):
 
         data = serializer.validated_data
 
-        # --------------------------------
         # Find user
-        # --------------------------------
-
         User = get_user_model()
 
         user = User.objects.filter(
@@ -367,20 +523,14 @@ class InternalPaymentSyncView(APIView):
 
         if not user:
             return Response(
-                {
-                    "detail": "User not found."
-                },
+                {"detail": "User not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # --------------------------------
-        # Validate card
-        # --------------------------------
-
+        # Validate card ownership
         card = None
 
         if data.get("card_id"):
-
             card = Card.objects.filter(
                 id=data["card_id"],
                 user=user,
@@ -389,35 +539,22 @@ class InternalPaymentSyncView(APIView):
             if not card:
                 return Response(
                     {
-                        "detail": (
-                            "Card not found for this user."
-                        )
+                        "detail": "Card not found for this user."
                     },
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
-        # --------------------------------
         # Create or update transaction
-        # --------------------------------
-
-        transaction, created = (
-            Transaction.objects.update_or_create(
-                payment_id=data["payment_id"],
-                defaults={
-                    "user": user,
-                    "card": card,
-                    "amount": data["amount"],
-                    "status": data["status"],
-                    "description": data.get(
-                        "description"
-                    ),
-                },
-            )
+        transaction, created = Transaction.objects.update_or_create(
+            payment_id=data["payment_id"],
+            defaults={
+                "user": user,
+                "card": card,
+                "amount": data["amount"],
+                "status": data["status"],
+                "description": data.get("description"),
+            },
         )
-
-        # --------------------------------
-        # Response
-        # --------------------------------
 
         return Response(
             {
@@ -447,10 +584,7 @@ class AdminTransactionCSVExportView(APIView):
 
     def get(self, request):
 
-        # --------------------------------
-        # Admin Log
-        # --------------------------------
-
+        # Admin log
         AdminLog.objects.create(
             admin=request.user,
             action="CSV_EXPORT",
@@ -460,10 +594,7 @@ class AdminTransactionCSVExportView(APIView):
 
         transactions = (
             Transaction.objects
-            .select_related(
-                "user",
-                "card",
-            )
+            .select_related("user", "card")
             .order_by("-created_at")
         )
 
@@ -491,7 +622,6 @@ class AdminTransactionCSVExportView(APIView):
         ])
 
         for transaction in transactions:
-
             writer.writerow([
                 transaction.id,
                 transaction.payment_id,
@@ -521,10 +651,7 @@ class AdminDashboardSummaryView(APIView):
 
     def get(self, request):
 
-        # --------------------------------
-        # Admin Log
-        # --------------------------------
-
+        # Admin log
         AdminLog.objects.create(
             admin=request.user,
             action="DASHBOARD_VIEW",
@@ -534,35 +661,22 @@ class AdminDashboardSummaryView(APIView):
 
         User = get_user_model()
 
-        # --------------------------------
-        # Overall Summary
-        # --------------------------------
-
+        # Overall summary
         total_users = User.objects.count()
-
         total_cards = Card.objects.count()
+        total_transactions = Transaction.objects.count()
 
-        total_transactions = (
-            Transaction.objects.count()
-        )
+        successful_payments = Transaction.objects.filter(
+            status="SUCCESS"
+        ).count()
 
-        successful_payments = (
-            Transaction.objects.filter(
-                status="SUCCESS"
-            ).count()
-        )
+        failed_payments = Transaction.objects.filter(
+            status="FAILED"
+        ).count()
 
-        failed_payments = (
-            Transaction.objects.filter(
-                status="FAILED"
-            ).count()
-        )
-
-        pending_payments = (
-            Transaction.objects.filter(
-                status="PENDING"
-            ).count()
-        )
+        pending_payments = Transaction.objects.filter(
+            status="PENDING"
+        ).count()
 
         total_payment_amount = (
             Transaction.objects.aggregate(
@@ -571,66 +685,42 @@ class AdminDashboardSummaryView(APIView):
             or Decimal("0.00")
         )
 
-        # --------------------------------
-        # Daily Summary Date
-        # --------------------------------
-
-        requested_date = request.query_params.get(
-            "date"
-        )
+        # Summary date
+        requested_date = request.query_params.get("date")
 
         if requested_date:
-
-            summary_date = parse_date(
-                requested_date
-            )
+            summary_date = parse_date(requested_date)
 
             if not summary_date:
                 return Response(
                     {
                         "detail": (
-                            "Invalid date format. "
-                            "Use YYYY-MM-DD."
+                            "Invalid date format. Use YYYY-MM-DD."
                         )
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
         else:
-
             summary_date = timezone.localdate()
 
-        # --------------------------------
-        # Daily Transactions
-        # --------------------------------
-
-        daily_transactions = (
-            Transaction.objects.filter(
-                created_at__date=summary_date
-            )
+        # Daily transactions
+        daily_transactions = Transaction.objects.filter(
+            created_at__date=summary_date
         )
 
-        daily_total_transactions = (
-            daily_transactions.count()
-        )
+        daily_total_transactions = daily_transactions.count()
 
-        daily_successful_payments = (
-            daily_transactions.filter(
-                status="SUCCESS"
-            ).count()
-        )
+        daily_successful_payments = daily_transactions.filter(
+            status="SUCCESS"
+        ).count()
 
-        daily_failed_payments = (
-            daily_transactions.filter(
-                status="FAILED"
-            ).count()
-        )
+        daily_failed_payments = daily_transactions.filter(
+            status="FAILED"
+        ).count()
 
-        daily_pending_payments = (
-            daily_transactions.filter(
-                status="PENDING"
-            ).count()
-        )
+        daily_pending_payments = daily_transactions.filter(
+            status="PENDING"
+        ).count()
 
         daily_total_amount = (
             daily_transactions.aggregate(
@@ -639,47 +729,27 @@ class AdminDashboardSummaryView(APIView):
             or Decimal("0.00")
         )
 
-        # --------------------------------
-        # Dashboard Response
-        # --------------------------------
-
         return Response(
             {
                 "overall_summary": {
                     "total_users": total_users,
                     "total_cards": total_cards,
-                    "total_transactions": (
-                        total_transactions
-                    ),
-                    "successful_payments": (
-                        successful_payments
-                    ),
-                    "failed_payments": (
-                        failed_payments
-                    ),
-                    "pending_payments": (
-                        pending_payments
-                    ),
-                    "total_payment_amount": (
-                        str(total_payment_amount)
+                    "total_transactions": total_transactions,
+                    "successful_payments": successful_payments,
+                    "failed_payments": failed_payments,
+                    "pending_payments": pending_payments,
+                    "total_payment_amount": str(
+                        total_payment_amount
                     ),
                 },
                 "daily_summary": {
                     "date": str(summary_date),
-                    "total_transactions": (
-                        daily_total_transactions
-                    ),
-                    "successful_payments": (
-                        daily_successful_payments
-                    ),
-                    "failed_payments": (
-                        daily_failed_payments
-                    ),
-                    "pending_payments": (
-                        daily_pending_payments
-                    ),
-                    "total_payment_amount": (
-                        str(daily_total_amount)
+                    "total_transactions": daily_total_transactions,
+                    "successful_payments": daily_successful_payments,
+                    "failed_payments": daily_failed_payments,
+                    "pending_payments": daily_pending_payments,
+                    "total_payment_amount": str(
+                        daily_total_amount
                     ),
                 },
             }
@@ -713,31 +783,19 @@ class MonthlyStatementView(APIView):
 
     def get(self, request):
 
-        # --------------------------------
         # Get year and month
-        # --------------------------------
-
         year = request.query_params.get("year")
         month = request.query_params.get("month")
-
-        # --------------------------------
-        # Required parameters
-        # --------------------------------
 
         if not year or not month:
             return Response(
                 {
-                    "detail": (
-                        "year and month are required."
-                    )
+                    "detail": "year and month are required."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # --------------------------------
         # Validate year and month
-        # --------------------------------
-
         try:
             year = int(year)
             month = int(month)
@@ -745,9 +803,15 @@ class MonthlyStatementView(APIView):
         except (TypeError, ValueError):
             return Response(
                 {
-                    "detail": (
-                        "Invalid year or month."
-                    )
+                    "detail": "Invalid year or month."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if year < 1:
+            return Response(
+                {
+                    "detail": "Year must be greater than zero."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -755,17 +819,12 @@ class MonthlyStatementView(APIView):
         if month < 1 or month > 12:
             return Response(
                 {
-                    "detail": (
-                        "Month must be between 1 and 12."
-                    )
+                    "detail": "Month must be between 1 and 12."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # --------------------------------
-        # Generate PDF
-        # --------------------------------
-
+        # Generate PDF statement
         return generate_monthly_statement(
             user=request.user,
             year=year,

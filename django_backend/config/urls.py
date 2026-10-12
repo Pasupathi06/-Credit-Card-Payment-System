@@ -1,34 +1,68 @@
 ﻿from django.contrib import admin
 from django.urls import include, path
+
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
 )
 
+
 urlpatterns = [
-    # Django Admin
-    path("admin/", admin.site.urls),
+    # ==========================================
+    # Django Admin Panel
+    # http://127.0.0.1:8000/admin/
+    # ==========================================
+    path(
+        "admin/",
+        admin.site.urls,
+    ),
 
+    # ==========================================
     # Authentication & User APIs
-    path("api/auth/", include("users.urls")),
+    # /api/auth/
+    # ==========================================
+    path(
+        "api/auth/",
+        include("users.urls"),
+    ),
 
-    # Card APIs
-    path("api/cards/", include("cards.urls")),
+    # ==========================================
+    # Credit Card APIs
+    # /api/cards/
+    # ==========================================
+    path(
+        "api/cards/",
+        include("cards.urls"),
+    ),
 
-    # Transaction APIs
-    path("api/transactions/", include("transactions.urls")),
+    # ==========================================
+    # Transaction & Payment APIs
+    # /api/transactions/
+    # ==========================================
+    path(
+        "api/transactions/",
+        include("transactions.urls"),
+    ),
 
-    # API Schema
+    # ==========================================
+    # OpenAPI Schema
+    # http://127.0.0.1:8000/api/schema/
+    # ==========================================
     path(
         "api/schema/",
         SpectacularAPIView.as_view(),
         name="schema",
     ),
 
-    # Swagger UI
+    # ==========================================
+    # Swagger API Documentation
+    # http://127.0.0.1:8000/swagger/
+    # ==========================================
     path(
         "swagger/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
+        SpectacularSwaggerView.as_view(
+            url_name="schema",
+        ),
         name="swagger-ui",
     ),
 ]

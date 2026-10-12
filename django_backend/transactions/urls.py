@@ -5,18 +5,21 @@ from .views import (
     AdminTransactionListView,
     PaymentSyncView,
     InternalPaymentSyncView,
+    InternalCardValidationView,
     AdminTransactionCSVExportView,
     AdminDashboardSummaryView,
     MonthlyStatementView,
 )
 
 
+app_name = "transactions"
+
+
 urlpatterns = [
-
     # ==========================================
-    # User Transaction History
+    # User - Transaction History
+    # GET /api/transactions/
     # ==========================================
-
     path(
         "",
         TransactionListView.as_view(),
@@ -24,9 +27,9 @@ urlpatterns = [
     ),
 
     # ==========================================
-    # Monthly Statement PDF
+    # User - Monthly Statement PDF
+    # GET /api/transactions/monthly-statement/
     # ==========================================
-
     path(
         "monthly-statement/",
         MonthlyStatementView.as_view(),
@@ -35,8 +38,8 @@ urlpatterns = [
 
     # ==========================================
     # Admin - All Transactions
+    # GET /api/transactions/admin/
     # ==========================================
-
     path(
         "admin/",
         AdminTransactionListView.as_view(),
@@ -44,9 +47,19 @@ urlpatterns = [
     ),
 
     # ==========================================
-    # Internal FastAPI -> Django Sync
+    # Internal - FastAPI Card Validation
+    # POST /api/transactions/internal-validate-card/
     # ==========================================
+    path(
+        "internal-validate-card/",
+        InternalCardValidationView.as_view(),
+        name="internal-card-validation",
+    ),
 
+    # ==========================================
+    # Internal - FastAPI Payment Synchronization
+    # POST /api/transactions/internal-sync/
+    # ==========================================
     path(
         "internal-sync/",
         InternalPaymentSyncView.as_view(),
@@ -54,9 +67,9 @@ urlpatterns = [
     ),
 
     # ==========================================
-    # User Payment Sync
+    # Payment Synchronization
+    # POST /api/transactions/sync/
     # ==========================================
-
     path(
         "sync/",
         PaymentSyncView.as_view(),
@@ -64,9 +77,9 @@ urlpatterns = [
     ),
 
     # ==========================================
-    # Admin - CSV Export
+    # Admin - Export Transactions to CSV
+    # GET /api/transactions/admin/export-csv/
     # ==========================================
-
     path(
         "admin/export-csv/",
         AdminTransactionCSVExportView.as_view(),
@@ -74,9 +87,9 @@ urlpatterns = [
     ),
 
     # ==========================================
-    # Admin - Dashboard
+    # Admin - Dashboard Summary
+    # GET /api/transactions/admin/dashboard/
     # ==========================================
-
     path(
         "admin/dashboard/",
         AdminDashboardSummaryView.as_view(),

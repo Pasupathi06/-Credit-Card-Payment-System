@@ -23,7 +23,7 @@
       INTERNAL_API_KEY: ${INTERNAL_API_KEY}
 
       # 🔴 ADD THIS LINE
-      JWT_SECRET_KEY: EKAXEsiAcLF9UnTg3jWI9qcqw0pJlUzczyhzfsdZQ1y-AHz3ewTeSSx238a9n3L9
+      JWT_SECRET_KEY:jkP5WxZYRlvtMuTUhM9JdLa21LO69Ajk8ev4am4lzktnfBQkn8MDK1vcT4G4o1aDZgVrB4rUCqekHzJ1brHnpQ
 
       MYSQL_DATABASE: credit_card_payment_db
       MYSQL_USER: root

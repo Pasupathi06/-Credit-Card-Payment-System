@@ -1,13 +1,12 @@
 from decimal import Decimal
-from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PaymentCreate(BaseModel):
-    user_id: int
-    card_id: int
-    amount: Decimal = Field(gt=0)
+    user_id: int = Field(..., gt=0)
+    card_id: int = Field(..., gt=0)
+    amount: Decimal = Field(..., gt=0)
     description: str | None = None
 
 
@@ -16,9 +15,7 @@ class PaymentResponse(BaseModel):
     user_id: int
     card_id: int
     amount: Decimal
+    description: str | None = None
     status: str
-    description: str | None
-    created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
